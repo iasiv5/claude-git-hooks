@@ -28,14 +28,14 @@ chmod +x install.sh
 ./install.sh
 ```
 
-### 2. 配置环境变量（可选）
+### 2. 配置环境（可选）
 
 ```bash
-# 复制配置文件
-cp config.example.sh config.sh
+# 复制配置文件到项目根目录（首次安装时 install.sh 也会自动生成）
+cp config.example.sh .claude-hooks-config.sh
 
 # 编辑配置文件
-nano config.sh
+nano .claude-hooks-config.sh
 ```
 
 ### 3. 正常使用 Git

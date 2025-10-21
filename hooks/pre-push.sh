@@ -21,25 +21,41 @@ readonly NC='\033[0m' # No Color
 # 日志函数
 # =============================================================================
 
+# 日志文件（可通过环境变量覆盖）
+LOG_FILE="${LOG_FILE:-.claude-hooks.log}"
+
+write_log() {
+    local level="$1"
+    local message="$2"
+    local timestamp
+    timestamp=$(date '+%Y-%m-%d %H:%M:%S')
+    printf '[%s] [%s] %s\n' "$timestamp" "$level" "$message" >> "$LOG_FILE" 2>/dev/null || true
+}
+
 log_info() {
     echo -e "${BLUE}[INFO]${NC} $1" >&2
+    write_log "INFO" "$1"
 }
 
 log_success() {
     echo -e "${GREEN}[SUCCESS]${NC} $1" >&2
+    write_log "SUCCESS" "$1"
 }
 
 log_warning() {
     echo -e "${YELLOW}[WARNING]${NC} $1" >&2
+    write_log "WARNING" "$1"
 }
 
 log_error() {
     echo -e "${RED}[ERROR]${NC} $1" >&2
+    write_log "ERROR" "$1"
 }
 
 log_debug() {
     if [[ "${CLAUDE_HOOKS_DEBUG:-false}" == "true" ]]; then
         echo -e "${PURPLE}[DEBUG]${NC} $1" >&2
+        write_log "DEBUG" "$1"
     fi
 }
 
@@ -294,6 +310,8 @@ EOF
 run_claude_push_analysis() {
     local push_info="$1"
     local analysis_level="$2"
+    local commit_range="$3"
+    local commit_count="$4"
 
     log_info "🤖 运行 Claude Code 推送分析..."
     log_debug "分析级别: $analysis_level"
@@ -506,7 +524,7 @@ execute_pre_push_hook() {
         commit_count=$(echo "$push_info" | grep '提交数量:' | cut -d' ' -f2-)
 
         if [[ "$commit_count" -gt 0 ]]; then
-            if ! run_claude_push_analysis "$push_info" "$ANALYSIS_LEVEL"; then
+            if ! run_claude_push_analysis "$push_info" "$ANALYSIS_LEVEL" "$commit_range" "$commit_count"; then
                 log_warning "⚠️ Claude Code 分析失败，仅执行基本检查"
             else
                 if ! analyze_push_results "$RESULT_FILE" "$push_info"; then
