@@ -207,7 +207,7 @@ cleanup_gitignore() {
     local in_claude_section=false
 
     while IFS= read -r line; do
-        if [[ "$line" =~ ^#.*Claude Code Git Hooks ]]; then
+        if echo "$line" | grep -q "^#.*Claude.*Code.*Git.*Hooks"; then
             in_claude_section=true
             ((removed_count++))
             continue
