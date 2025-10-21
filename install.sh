@@ -76,11 +76,7 @@ check_requirements() {
     else
         log_warning "⚠ Claude Code 未安装"
         log_info "  请安装 Claude Code: npm install -g @anthropic-ai/claude-code"
-        read -p "是否继续安装（Claude Code 功能将被跳过）? (y/N): " -n 1 -r
-        echo
-        if [[ ! $REPLY =~ ^[Yy]$ ]]; then
-            exit 1
-        fi
+        log_info "  继续安装（Claude Code 功能将被跳过）..."
     fi
 
     # 检查 API Key

@@ -13,3 +13,12 @@ claude-hooks-backup/
 # Logs and temp
 *.log
 *.tmp
+
+# Claude Code Git Hooks
+.claude-hooks.log
+
+# Claude Code Git Hooks
+.claude-hooks-cache/
+
+# Claude Code Git Hooks
+.claude-hooks-temp/

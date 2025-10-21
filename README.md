@@ -16,39 +16,35 @@
 ### 1. 安装 Hooks
 
 ```bash
-# 进入你的 Git 项目目录
-cd /path/to/your/project
-
-# 克隆或下载本仓库
+# 克隆仓库
 git clone <repository-url> claude-git-hooks
 cd claude-git-hooks
 
-# 运行安装脚本
-chmod +x install.sh
+# 运行安装脚本（自动检测操作系统）
 ./install.sh
 ```
 
-### 2. 配置环境（可选）
+**Windows 用户**：如需使用 PowerShell，可运行：
+```powershell
+.\install.ps1
+```
+
+### 2. 配置（可选）
+
+安装脚本会自动生成配置文件 `.claude-hooks-config.sh`，您可根据需要编辑：
 
 ```bash
-# 复制配置文件到项目根目录（首次安装时 install.sh 也会自动生成）
-cp config.example.sh .claude-hooks-config.sh
-
-# 编辑配置文件
+# 编辑配置
 nano .claude-hooks-config.sh
 ```
 
-### 3. 正常使用 Git
+### 3. 开始使用
 
 ```bash
-# 添加文件
+# 正常使用 Git，hooks 会自动触发
 git add .
-
-# 提交代码（自动触发 pre-commit 检查）
-git commit -m "feat: add new feature"
-
-# 推送代码（自动触发 pre-push 检查）
-git push origin main
+git commit -m "feat: add new feature"    # 触发 pre-commit 检查
+git push origin main                     # 触发 pre-push 检查
 ```
 
 ## 项目结构
@@ -141,6 +137,18 @@ export ANALYSIS_LEVEL=thorough
 ### 常见问题
 
 1. **Hook 不执行**
+
+   **Windows 系统:**
+   ```powershell
+   # 使用 PowerShell 检查权限
+   Get-Item .git/hooks/pre-commit
+
+   # 使用 Git Bash 检查和设置权限
+   ls -la .git/hooks/pre-commit
+   chmod +x .git/hooks/pre-commit
+   ```
+
+   **Linux / macOS 系统:**
    ```bash
    # 检查权限
    ls -la .git/hooks/pre-commit
@@ -165,6 +173,16 @@ export ANALYSIS_LEVEL=thorough
 
 ### 查看日志
 
+**Windows 系统:**
+```powershell
+# 查看 Hook 执行日志
+Get-Content .claude-hooks.log
+
+# 实时查看日志
+Get-Content .claude-hooks.log -Wait
+```
+
+**Linux / macOS 系统:**
 ```bash
 # 查看 Hook 执行日志
 cat .claude-hooks.log
@@ -217,6 +235,31 @@ jobs:
       - name: Run Claude Review
         run: claude --print --system-prompt="You are a code reviewer" "Please review the code changes"
 ```
+
+### Windows 特定问题
+
+1. **PowerShell 执行策略问题**
+   ```powershell
+   # 临时设置执行策略（仅当前会话）
+   Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
+
+   # 或者永久设置（需要管理员权限）
+   Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
+   ```
+
+2. **路径问题**
+   ```powershell
+   # 确保使用正斜杠或转义反斜杠
+   cd "C:/Users/username/project"
+   # 或
+   cd "C:\Users\username\project"
+   ```
+
+3. **Git Bash 路径问题**
+   ```bash
+   # 在 Git Bash 中使用 Windows 路径
+   cd "/mnt/c/Users/username/project"
+   ```
 
 ## 性能优化
 
