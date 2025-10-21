@@ -21,25 +21,42 @@ readonly NC='\033[0m' # No Color
 # 日志函数
 # =============================================================================
 
+# 日志文件（可通过环境变量覆盖）
+LOG_FILE="${LOG_FILE:-.claude-hooks.log}"
+
+write_log() {
+    local level="$1"
+    local message="$2"
+    local timestamp
+    timestamp=$(date '+%Y-%m-%d %H:%M:%S')
+    # 去除颜色后写入文件
+    printf '[%s] [%s] %s\n' "$timestamp" "$level" "$message" >> "$LOG_FILE" 2>/dev/null || true
+}
+
 log_info() {
     echo -e "${BLUE}[INFO]${NC} $1" >&2
+    write_log "INFO" "$1"
 }
 
 log_success() {
     echo -e "${GREEN}[SUCCESS]${NC} $1" >&2
+    write_log "SUCCESS" "$1"
 }
 
 log_warning() {
     echo -e "${YELLOW}[WARNING]${NC} $1" >&2
+    write_log "WARNING" "$1"
 }
 
 log_error() {
     echo -e "${RED}[ERROR]${NC} $1" >&2
+    write_log "ERROR" "$1"
 }
 
 log_debug() {
     if [[ "${CLAUDE_HOOKS_DEBUG:-false}" == "true" ]]; then
         echo -e "${PURPLE}[DEBUG]${NC} $1" >&2
+        write_log "DEBUG" "$1"
     fi
 }
 
@@ -321,6 +338,7 @@ EOF
 
 analyze_results() {
     local result_file="$1"
+    local files_list="$2"
 
     if [[ ! -f "$result_file" ]]; then
         log_error "分析结果文件不存在"
@@ -339,7 +357,7 @@ analyze_results() {
         echo "  \"timestamp\": \"$(date -Iseconds)\","
         echo "  \"hook\": \"$HOOK_NAME\","
         echo "  \"analysis_level\": \"$ANALYSIS_LEVEL\","
-        echo "  \"files_analyzed\": $(echo "$STAGED_FILES" | wc -l | awk '{print $1}'),"
+        echo "  \"files_analyzed\": $(echo "$files_list" | wc -l | awk '{print $1}'),"
         echo "  \"result\": \"$(echo "$result_content" | head -n 1 | sed 's/["\\]/\\&/g' | cut -c1-50)\""
         echo "}"
     } > "$ANALYSIS_FILE"
@@ -437,7 +455,7 @@ EOF
     fi
 
     # 分析结果
-    if ! analyze_results "$RESULT_FILE"; then
+    if ! analyze_results "$RESULT_FILE" "$staged_files"; then
         exit 1
     fi
 

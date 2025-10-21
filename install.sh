@@ -179,53 +179,8 @@ install_hooks() {
         local target_file="$git_hooks_dir/$hook_name"
 
         if [[ -f "$source_file" ]]; then
-            # 创建目标文件
-            cat > "$target_file" << EOF
-#!/bin/bash
-# Claude Code Git Hook: $hook_name
-# 自动生成的 hook，请勿手动修改
-# 生成时间: $(date)
-
-# Hook 配置
-export CLAUDE_HOOKS_DIR="$SCRIPT_DIR"
-export CLAUDE_HOOKS_ENABLED="true"
-
-# 加载工具函数
-source "$UTILS_DIR/logger.sh"
-source "$UTILS_DIR/file-utils.sh"
-source "$UTILS_DIR/claude-client.sh"
-
-# 加载配置
-load_claude_hooks_config
-
-# 执行 hook
-if [[ "\${${hook_name^^}_ENABLED}" == "true" ]]; then
-    log_info "🤖 Claude Code $hook_name hook starting..."
-
-    if [[ "\$CLAUDE_HOOKS_DEBUG" == "true" ]]; then
-        log_debug "Hook configuration:"
-        log_debug "  Hook enabled: \${${hook_name^^}_ENABLED}"
-        log_debug "  Analysis level: \$ANALYSIS_LEVEL"
-        log_debug "  Timeout: \$CLAUDE_TIMEOUT"
-        log_debug "  Debug mode: \$CLAUDE_HOOKS_DEBUG"
-    fi
-
-    # 执行 hook 逻辑
-    execute_${hook_name//-/_}_hook
-
-    exit_code=\$?
-    if [[ \$exit_code -eq 0 ]]; then
-        log_success "✅ $hook_name hook completed successfully"
-    else
-        log_error "❌ $hook_name hook failed (exit code: \$exit_code)"
-    fi
-    exit \$exit_code
-else
-    log_info "ℹ️  $hook_name hook is disabled"
-    exit 0
-fi
-EOF
-
+            # 直接安装实际的 hook 脚本，保持脚本自包含逻辑
+            cp "$source_file" "$target_file"
             chmod +x "$target_file"
             log_success "✓ Installed $hook_name hook"
         else
