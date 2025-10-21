@@ -118,15 +118,17 @@ validate_commit_message_format() {
         return 1
     fi
 
-    # 检查长度
-    local msg_length=${#commit_msg}
-    if [[ $msg_length -gt $COMMIT_MESSAGE_MAX_LENGTH ]]; then
-        log_error "❌ 提交消息过长 ($msg_length > $COMMIT_MESSAGE_MAX_LENGTH 字符)"
+    # 检查长度（仅检查标题行）
+    local first_line
+    first_line=$(echo "$commit_msg" | head -n 1)
+    local title_length=${#first_line}
+    if [[ $title_length -gt $COMMIT_MESSAGE_MAX_LENGTH ]]; then
+        log_error "❌ 提交标题过长 ($title_length > $COMMIT_MESSAGE_MAX_LENGTH 字符)"
         return 1
     fi
 
-    if [[ $msg_length -lt $COMMIT_MESSAGE_MIN_LENGTH ]]; then
-        log_warning "⚠️ 提交消息过短 ($msg_length < $COMMIT_MESSAGE_MIN_LENGTH 字符)"
+    if [[ $title_length -lt $COMMIT_MESSAGE_MIN_LENGTH ]]; then
+        log_warning "⚠️ 提交标题过短 ($title_length < $COMMIT_MESSAGE_MIN_LENGTH 字符)"
     fi
 
     # 检查格式（如果启用）
@@ -400,7 +402,7 @@ execute_commit_msg_hook() {
     commit_msg=$(cat "$COMMIT_MSG_FILE")
 
     # 跳过特殊提交
-    if [[ "$commit_msg" =~ ^(Merge|Revert|fixup|squash)! ]]; then
+    if [[ "$commit_msg" =~ ^(Merge|Revert|fixup!|squash!) ]]; then
         log_info "ℹ️ 跳过特殊提交类型: ${commit_msg:0:20}..."
         exit 0
     fi
