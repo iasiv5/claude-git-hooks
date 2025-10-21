@@ -4,6 +4,7 @@
 .claude-hooks-temp/
 claude-hooks-backup/
 .claude-hooks-team.yml
+.claude-hooks-config.sh
 
 # OS / Editor
 .DS_Store
