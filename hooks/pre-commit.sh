@@ -187,83 +187,83 @@ build_review_prompt() {
     log_debug "构建审查提示，分析级别: $analysis_level"
 
     cat << EOF
-你是一个资深软件工程师，正在进行 Git 提交前的代码审查。
+You are a senior software engineer conducting pre-commit code review.
 
-## 分析级别
+## Analysis Level
 $analysis_level
 
-## 项目信息
+## Project Information
 $project_info
 
-## 变更文件列表
+## Changed Files List
 $files_list
 
-## 审查重点
+## Review Focus
 
-### 🐛 明显错误和 Bug
-- 语法错误和编译问题
-- 逻辑错误和算法问题
-- 边界条件和异常处理
-- 资源管理和内存泄漏
+### Bug Detection
+- Syntax errors and compilation issues
+- Logic errors and algorithm problems
+- Edge cases and exception handling
+- Resource management and memory leaks
 
-### 🔒 安全问题
-- 输入验证和输出编码
-- SQL 注入和 XSS 攻击
-- 敏感信息泄露
-- 权限控制和认证问题
+### Security Issues
+- Input validation and output encoding
+- SQL injection and XSS attacks
+- Sensitive information leakage
+- Access control and authentication issues
 
-### 📊 性能问题
-- 算法复杂度和效率
-- 资源使用和内存占用
-- 数据库查询优化
-- 缓存和并发处理
+### Performance Issues
+- Algorithm complexity and efficiency
+- Resource usage and memory consumption
+- Database query optimization
+- Caching and concurrency handling
 
-### 🎯 最佳实践
-- 代码规范和命名约定
-- 设计模式和架构原则
-- 可维护性和可扩展性
-- 错误处理和日志记录
+### Best Practices
+- Code standards and naming conventions
+- Design patterns and architectural principles
+- Maintainability and scalability
+- Error handling and logging
 
-### 🧪 测试和质量
-- 单元测试覆盖度
-- 集成测试完整性
-- 代码可测试性
-- 测试用例质量
+### Testing and Quality
+- Unit test coverage
+- Integration testing completeness
+- Code testability
+- Test case quality
 
-## 输出格式要求
+## Output Format Requirements
 
-### 如果发现问题：
-```
-❌ [严重性级别] 文件名:行号 - 问题描述
+### If issues found:
+\`\`\`
+ERROR [Severity] Filename:Line - Problem Description
 
-[文件路径]
-问题代码位置...
+[File Path]
+Problem code location...
 
-📝 问题详情：
-- 问题类型：[安全/性能/逻辑/样式/测试]
-- 严重程度：[CRITICAL/HIGH/MEDIUM/LOW]
-- 具体描述：问题的详细说明
-- 修复建议：具体的修复方案
-- 预防措施：避免类似问题的建议
-```
+Problem Details:
+- Type: [Security/Performance/Logic/Style/Test]
+- Severity: [CRITICAL/HIGH/MEDIUM/LOW]
+- Description: Detailed problem description
+- Fix Suggestion: Specific fix solution
+- Prevention: Suggestions to avoid similar issues
+\`\`\`
 
-### 如果没有严重问题：
-```
-✅ PASS - 代码质量良好，可以提交
+### If no serious issues:
+\`\`\`
+PASS - Code quality is good, can be committed
 
-📊 分析摘要：
-- 检查文件数：X 个
-- 主要优势：代码风格、逻辑清晰等
-- 建议关注：可优化的地方（如果有）
-```
+Analysis Summary:
+- Files checked: X files
+- Main strengths: Code style, logic clarity, etc.
+- Areas for improvement: Optimizable areas (if any)
+\`\`\`
 
-## 分析策略
-- $analysis_level 级别分析
-- 重点关注新提交的代码
-- 考虑项目上下文和业务逻辑
-- 提供可操作的改进建议
+## Analysis Strategy
+- $analysis_level level analysis
+- Focus on newly submitted code
+- Consider project context and business logic
+- Provide actionable improvement suggestions
 
-请开始分析...
+Please start analysis...
 EOF
 }
 
@@ -272,7 +272,7 @@ run_claude_analysis() {
     local analysis_level="$2"
     local project_info="$3"
 
-    log_info "🤖 运行 Claude Code 分析..."
+    log_info "运行 Claude Code 分析..."
     log_debug "文件列表: $files_to_analyze"
     log_debug "分析级别: $analysis_level"
 
@@ -293,8 +293,8 @@ run_claude_analysis() {
     done
 
     if [[ $file_count -eq 0 ]]; then
-        log_info "📋 没有合适的文件需要分析"
-        echo "✅ PASS - 无需分析的文件" > "$RESULT_FILE"
+        log_info "没有合适的文件需要分析"
+        echo "PASS - 无需分析的文件" > "$RESULT_FILE"
         return 0
     fi
 
@@ -303,7 +303,7 @@ run_claude_analysis() {
     review_prompt=$(build_review_prompt "$files_to_analyze" "$ANALYSIS_LEVEL" "$project_info")
 
     # 运行 Claude 分析
-    log_info "🔍 分析 $file_count 个文件..."
+    log_info "分析 $file_count 个文件..."
 
     local timeout_seconds=$((CLAUDE_TIMEOUT / 1000))
 
@@ -313,20 +313,20 @@ run_claude_analysis() {
         << EOF > "$RESULT_FILE" 2>&1
 $review_prompt
 
-## 文件内容预览
+## File Content Preview
 $file_contents
 
-请基于以上内容进行代码质量分析。
+Please analyze the code quality based on the content above.
 EOF
     then
-        log_success "✅ Claude Code 分析完成"
+        log_success "Claude Code 分析完成"
         return 0
     else
         local exit_code=$?
         if [[ $exit_code -eq 124 ]]; then
-            log_error "❌ Claude Code 分析超时 ($timeout_seconds 秒)"
+            log_error "Claude Code 分析超时 ($timeout_seconds 秒)"
         else
-            log_error "❌ Claude Code 分析失败 (退出码: $exit_code)"
+            log_error "Claude Code 分析失败 (退出码: $exit_code)"
         fi
         return 1
     fi
@@ -363,39 +363,39 @@ analyze_results() {
     } > "$ANALYSIS_FILE"
 
     # 分析结果
-    if echo "$result_content" | grep -q "✅ PASS"; then
-        log_success "🎉 代码审查通过"
-        echo -e "\n${CYAN}📋 分析结果:${NC}"
+    if echo "$result_content" | grep -q "PASS"; then
+        log_success "代码审查通过"
+        echo -e "\n${CYAN}[分析结果]:${NC}"
         echo "$result_content"
         return 0
-    elif echo "$result_content" | grep -q "❌.*CRITICAL\|❌.*HIGH"; then
-        log_error "🚨 发现严重问题，阻止提交"
-        echo -e "\n${RED}🚨 严重问题:${NC}"
+    elif echo "$result_content" | grep -q "ERROR.*CRITICAL\|ERROR.*HIGH"; then
+        log_error "发现严重问题，阻止提交"
+        echo -e "\n${RED}[严重问题]:${NC}"
         echo "$result_content"
 
-        echo -e "\n${YELLOW}💡 建议:${NC}"
+        echo -e "\n${YELLOW}[建议]:${NC}"
         echo "  1. 修复上述问题后重新提交"
         echo "  2. 使用 git commit --no-verify 跳过检查"
         echo "  3. 临时禁用此 hook: export PRE_COMMIT_ENABLED=false"
 
         return 1
-    elif echo "$result_content" | grep -q "❌\|⚠️"; then
-        log_warning "⚠️ 发现问题，建议关注"
-        echo -e "\n${YELLOW}⚠️ 发现问题:${NC}"
+    elif echo "$result_content" | grep -q "ERROR\|WARNING"; then
+        log_warning "发现问题，建议关注"
+        echo -e "\n${YELLOW}[发现问题]:${NC}"
         echo "$result_content"
 
-        echo -e "\n${BLUE}🤔 是否继续提交？${NC}"
+        echo -e "\n${BLUE}[是否继续提交?]${NC}"
         read -p "继续提交可能引入问题，是否仍要提交？(y/N): " -r
         if [[ ! $REPLY =~ ^[Yy]$ ]]; then
-            log_info "❌ 提交已取消"
+            log_info "提交已取消"
             return 1
         else
-            log_info "✅ 继续提交"
+            log_info "继续提交"
             return 0
         fi
     else
-        log_success "✅ 分析完成，未发现严重问题"
-        echo -e "\n${CYAN}📋 分析结果:${NC}"
+        log_success "分析完成，未发现严重问题"
+        echo -e "\n${CYAN}[分析结果]:${NC}"
         echo "$result_content"
         return 0
     fi
@@ -406,14 +406,14 @@ analyze_results() {
 # =============================================================================
 
 execute_pre_commit_hook() {
-    log_info "🤖 Claude Code Pre-commit Hook 开始执行..."
+    log_info "Claude Code Pre-commit Hook 开始执行..."
 
     # 加载配置
     load_claude_hooks_config
 
     # 检查是否启用
     if [[ "$PRE_COMMIT_ENABLED" != "true" ]]; then
-        log_info "ℹ️ Pre-commit hook 已禁用"
+        log_info "Pre-commit hook 已禁用"
         exit 0
     fi
 
@@ -423,25 +423,25 @@ execute_pre_commit_hook() {
     # 获取项目信息
     local project_info
     project_info=$(cat << EOF
-项目名称: ${PROJECT_NAME:-$(basename "$(pwd)")}
-项目类型: ${PROJECT_TYPE:-unknown}
-主要语言: ${PRIMARY_LANGUAGE:-unknown}
-分析级别: $ANALYSIS_LEVEL
-检查时间: $(date)
+Project Name: ${PROJECT_NAME:-$(basename "$(pwd)")}
+Project Type: ${PROJECT_TYPE:-unknown}
+Primary Language: ${PRIMARY_LANGUAGE:-unknown}
+Analysis Level: $ANALYSIS_LEVEL
+Check Time: $(date)
 EOF
 )
 
     # 获取需要分析的文件
-    log_info "📋 获取暂存的代码文件..."
+    log_info "获取暂存的代码文件..."
     local staged_files
     staged_files=$(get_staged_files "$CODE_EXTENSIONS" "$EXCLUDE_PATTERNS")
 
     if [[ -z "$staged_files" ]]; then
-        log_info "✅ 没有需要分析的代码文件"
+        log_info "没有需要分析的代码文件"
         exit 0
     fi
 
-    log_info "📋 发现 $(echo "$staged_files" | wc -l | awk '{print $1}') 个文件需要分析"
+    log_info "发现 $(echo "$staged_files" | wc -l | awk '{print $1}') 个文件需要分析"
 
     # 显示文件列表
     if [[ "$CLAUDE_HOOKS_DEBUG" == "true" ]]; then
@@ -450,7 +450,7 @@ EOF
 
     # 运行 Claude 分析
     if ! run_claude_analysis "$staged_files" "$ANALYSIS_LEVEL" "$project_info"; then
-        log_error "❌ Claude Code 分析失败"
+        log_error "Claude Code 分析失败"
         exit 1
     fi
 
@@ -459,7 +459,7 @@ EOF
         exit 1
     fi
 
-    log_success "🎉 Pre-commit hook 执行完成"
+    log_success "Pre-commit hook 执行完成"
 }
 
 # =============================================================================
